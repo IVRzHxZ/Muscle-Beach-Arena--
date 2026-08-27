@@ -643,21 +643,6 @@ FarmTab:AddSwitch("Auto Push Ups", function(bool)
     end
 end)
 
--- Switch: Auto Rebirth Loop
-FarmTab:AddSwitch("Auto Rebirth", function(bool)
-    autoRebirth = bool
-    
-    -- Run execution loop safely on a background thread
-    task.spawn(function()
-        while autoRebirth do
-            game:GetService("ReplicatedStorage").remotes.rebirthRequest:FireServer()
-            
-            -- Essential delay to prevent game rate-limiting or crashing
-            task.wait(0.1) 
-        end
-    end)
-end)
-
 -- Global Environment Setup
 getgenv().AutoSpin = false
 
@@ -1294,6 +1279,60 @@ toos:AddSwitch("Auto Equiped Squat 75kg", function(state)
         task.wait(6)
     end
 end)
+
+local RebTab = window:AddTab("Rebirth")
+
+-- Switch: Auto Rebirth Loop
+RebTab:AddSwitch("Auto Rebirth", function(bool)
+    autoRebirth = bool
+    
+    -- Run execution loop safely on a background thread
+    task.spawn(function()
+        while autoRebirth do
+            game:GetService("ReplicatedStorage").remotes.rebirthRequest:FireServer()
+            
+            -- Essential delay to prevent game rate-limiting or crashing
+            task.wait(0.1) 
+        end
+    end)
+end)
+
+-- References
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local remotesFolder = ReplicatedStorage:WaitForChild("remotes", 5)
+local rebirthRemote = remotesFolder and remotesFolder:WaitForChild("rebirthRequest", 5)
+
+-- Store original parent or backup if needed
+local realRemoteParent = rebirthRemote and rebirthRemote.Parent
+
+-- State Variable for Anti-Rebirth
+local antiRebirthActive = false
+
+-- Add Anti-Rebirth Switch to FarmTab (Added the missing '=' sign)
+local antiRebirths = RebTab:AddSwitch("Anti-Rebirth", function(bool)
+    antiRebirthActive = bool
+    
+    if antiRebirthActive then
+        if rebirthRemote and rebirthRemote.Parent then
+            -- Unparenting the remote blocks any script or button from finding/firing it
+            rebirthRemote.Parent = nil
+        end
+        print("Anti-Rebirth enabled: Rebirth remote disabled.")
+    else
+        if rebirthRemote and realRemoteParent then
+            -- Restores the remote when turned off
+            rebirthRemote.Parent = realRemoteParent
+        end
+        print("Anti-Rebirth disabled: Rebirth remote restored.")
+    end
+end)
+
+-- Force initial state toggle manually since UI library :Set() often skips callbacks on start
+antiRebirths:Set(true)
+antiRebirthActive = true
+if rebirthRemote and rebirthRemote.Parent then
+    rebirthRemote.Parent = nil
+end
 
 -- Create Tab within the Window
 local eggtab = window:AddTab("Auto Egg")
