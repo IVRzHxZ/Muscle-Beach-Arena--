@@ -8,89 +8,10 @@ local LocalPlayer = Players.LocalPlayer
 local windowTitle = "KyoXRimuru Private | Welcome " .. LocalPlayer.DisplayName
 
 local window = library:AddWindow(windowTitle, {
-    main_color = Color3.fromRGB(41, 74, 122),
+    main_color = Color3.fromRGB(0, 0, 0),
     min_size = Vector2.new(600, 500),
     can_resize = false
 })
-
-task.spawn(function()
-    local imgui = game:GetService("CoreGui"):WaitForChild("imgui", 10)
-    if not imgui then return end
-
-    -- 🔥 FIXED THEME COLORS
-    local WINDOW_COLOR = Color3.fromRGB(20, 20, 25)
-    local FIRE_ORANGE = Color3.fromRGB(0, 0, 0)
-    local DARK_EMBER = Color3.fromRGB(0, 0, 0)
-    local BLACK = Color3.fromRGB(25, 25, 25)
-    
-    -- 🎨 DROPDOWN BOX COLOR (Baguhin mo dito kung gusto mo ibang kulay)
-    local DROPDOWN_BOX_COLOR = Color3.fromRGB(20, 20, 25)
-
-    local function forceFireTheme(element)
-        if not element or not element:IsA("GuiObject") then return end
-        if element:GetAttribute("UI_ForcedFire") then return end
-
-        local nameLower = element.Name:lower()
-        local parent = element.Parent
-        local parentName = parent and parent.Name:lower() or ""
-
-        if nameLower:match("indicator") or nameLower:match("checkmark") or nameLower:match("toggle") then
-            return 
-        end
-
-        -- Detect kung ito yung mismong Box ng dropdown batay sa ibinigay mo
-        local isDropdownBox = (nameLower == "box") and (parentName:match("dropdown") or parentName == "d" or parentName:match("adddropdown"))
-
-        -- 1. IMAGE ASSETS (Dito papasok yung Box mo dahil ImageLabel/ImageButton ito)
-        if element:IsA("ImageLabel") or element:IsA("ImageButton") then
-            if isDropdownBox then
-                element.ImageColor3 = DROPDOWN_BOX_COLOR
-                element:SetAttribute("UI_ForcedFire", true)
-                return
-            elseif nameLower:match("window") or nameLower:match("main") then
-                element.ImageColor3 = WINDOW_COLOR
-            elseif nameLower:match("folder") then
-                element.ImageColor3 = BLACK
-            elseif nameLower:match("tab") then
-                element.ImageColor3 = DARK_EMBER
-            else
-                element.ImageColor3 = FIRE_ORANGE
-            end
-        end
-
-        -- 2. BACKGROUNDS & FRAMES
-        if element:IsA("Frame") or element:IsA("TextButton") or element:IsA("TextBox") then
-            if isDropdownBox then
-                element.BackgroundColor3 = DROPDOWN_BOX_COLOR
-                element:SetAttribute("UI_ForcedFire", true)
-                return
-            elseif nameLower:match("window") or nameLower:match("main") then
-                element.BackgroundColor3 = WINDOW_COLOR
-            elseif nameLower:match("folder") then
-                element.BackgroundColor3 = BLACK
-            elseif nameLower:match("tab") then
-                element.BackgroundColor3 = DARK_EMBER
-            elseif nameLower:match("addswitch") 
-                or nameLower:match("addbutton") 
-                or nameLower:match("addslider") 
-                or nameLower:match("addtextbox")
-                or nameLower:match("bar") then
-                
-                element.BackgroundColor3 = FIRE_ORANGE
-            end
-        end
-
-        element:SetAttribute("UI_ForcedFire", true)
-    end
-
-    for _, element in ipairs(imgui:GetDescendants()) do
-        task.defer(forceFireTheme, element)
-    end
-
-    imgui.DescendantAdded:Connect(function(element)
-        task.defer(forceFireTheme, element)
-    end)
-end)
 
 local features = window:AddTab("Credits") -- Name of tab
 features:Show() -- shows the tab
